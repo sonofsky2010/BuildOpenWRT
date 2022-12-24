@@ -55,8 +55,8 @@ jobs:
       - name: Merge LEDE
         run: |
           cd lede
-          make download -j8 V=s
-          make -j8 V=s
+          make download -j32 V=s
+          make -j32 V=s
 
       - name: Assemble Artifact
         run: |
