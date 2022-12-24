@@ -1,0 +1,70 @@
+name: BuildOpenWrt
+
+on: push
+
+jobs:
+
+  build:
+
+    runs-on: p3terx/openwrt-build-env
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          ref: main
+
+      # - name: Initialize Environment
+      #   env:
+      #     DEBIAN_FRONTEND: noninteractive
+      #   run: |
+      #     sudo apt-get update
+      #     sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk
+      #     sudo docker image prune -a -f
+      #     sudo apt-get -y install unzip subversion
+      #     sudo apt-get -y purge dotnet* ghc* google* llvm* mysql* php* zulu* firefox hhvm
+      #     sudo apt-get -y autoremove --purge          
+      #     wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
+
+      #- name: Setup Debug Session
+      #  uses: P3TERX/debugger-action@master
+  
+      # - name: Install Repo
+      #   run: |
+      #     git clone https://github.com/friendlyarm/repo
+      #     sudo cp repo/repo /usr/bin/
+
+      - name: Download Source
+        run: |
+          git clone https://github.com/coolsnowwolf/lede.git
+          cd lede
+          git restore feeds.conf.default
+          git pull
+          sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
+          sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
+          rm -rf feeds
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          cp ../build_config .config
+
+
+      - name: Merge LEDE
+        run: |
+          cd lede
+          make download -j8 V=s
+          make -j8 V=s
+
+      - name: Assemble Artifact
+        run: |
+          rm -rf ./artifact/
+          mkdir -p ./artifact/
+
+          cp lede/bin/targets/x86/64/*.gz ./artifact/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: OpenWRT
+          path: ./artifact/
+
