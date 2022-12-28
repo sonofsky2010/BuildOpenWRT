@@ -49,7 +49,7 @@ jobs:
           rm -rf feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          cp ../build_config .config
+          cp ../r2s_config .config
 
 
       - name: Merge LEDE
