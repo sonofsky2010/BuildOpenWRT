@@ -57,7 +57,7 @@ jobs:
           rm -rf feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          cp ../x86_config .config
+          cp ../package_config .config
 
 
       - name: Merge LEDE
