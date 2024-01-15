@@ -6,7 +6,7 @@ jobs:
 
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
 
     steps:
@@ -42,14 +42,15 @@ jobs:
         run: |
           git clone https://github.com/coolsnowwolf/lede.git
           cd lede
-          git restore feeds.conf.default
-          git pull
+          git reset 5acc56143fb74aa122bc8fdaca5a0a6e333237b6 --hard
+          # git restore feeds.conf.default
+          # git pull
           sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
           sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
           rm -rf feeds
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          cp ../r2s_config .config
+          cp ../x86_config .config
 
 
       - name: Merge LEDE
@@ -62,9 +63,11 @@ jobs:
         run: |
           rm -rf ./artifact/
           mkdir -p ./artifact/
+          mkdir -p ./artifact/package
 
-          #cp lede/bin/targets/x86/64/*.gz ./artifact/
-          cp lede/bin/targets/rockchip/armv8/*.gz ./artifact/
+          cp lede/bin/targets/x86/64/*.gz ./artifact/
+          cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          # cp lede/bin/targets/rockchip/armv8/*.gz ./artifact/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@master
